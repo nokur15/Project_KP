@@ -71,7 +71,7 @@
               </label>
             </div>
             <button class="btn btn-primary" onclick="captureImage()">Capture Image</button>
-           
+            <button class="btn btn-primary" onclick="showTable()">Show Table</button>
           </div>
         </div>
       </div>
@@ -110,7 +110,7 @@
       }
     })
     $(document).ready(function(){
-      
+
     })
 
     function captureImage(){
@@ -124,7 +124,7 @@
       $.ajax({
         url:'http://localhost:5000/gambar',
         success:(x)=>{
-          Swal.hideLoading() 
+          Swal.hideLoading()
           var html = `<img width="75%" src="data:image/jpeg;base64, ${x}"><p>Captured : ${moment().format(`DD MM YYYY - HH:mm`)}</p>`
           Swal.fire({
             title:"Captured image",
@@ -132,8 +132,29 @@
           })
         }
       })
-      
+
     }
+    function showTable(){
+      Swal.fire({
+        title:"Mengambil table",
+        allowOutsideClick:false,
+        text:"Jangan menutup browser sebelum proses selesai !",
+        icon:"warning"
+      })
+      Swal.showLoading();
+      $.ajax({
+        url:'http://localhost:5000/tabel',
+        success:(x)=>{
+          Swal.hideLoading()
+          var html ='<p>{{filetable}}</p>'
+          Swal.fire({
+            title:"CCTV Table",
+            html:html,
+          })
+        }
+      })
+    }
+
     function ab2str(buf) {
       var result = '';
       if (buf) {

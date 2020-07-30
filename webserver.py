@@ -3,7 +3,7 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO,send,emit
 from flask import render_template
-import cv2 
+import cv2
 import base64
 from threading import Thread
 from time import sleep
@@ -35,7 +35,38 @@ def call_at_interval(period, callback, args):
 
 def setInterval(period, callback, *args):
     Thread(target=call_at_interval, args=(period, callback, args)).start()
-    
+
+
+def query_mysql(query):
+	cnx = mysql.connector.connect(user='root', password='serenaochacohina',
+								  host='localhost',
+								  database='datacctv',charset="utf8", use_unicode = True)
+	cursor = cnx.cursor()
+	cursor.execute(query)
+	#get header and rows
+	header = [i[0] for i in cursor.description]
+	rows = [list(i) for i in cursor.fetchall()]
+	#append header to rows
+	rows.insert(0,header)
+	cursor.close()
+	cnx.close()
+	return rows
+
+#take list of lists as argument
+def nlist_to_html(list2d):
+	#bold header
+	htable=u'<table width ="70%" border="1" bordercolor=000000 cellspacing="0" cellpadding="1" style="table-layout:fixed;vertical-align:bottom;font-size:13px;font-family:verdana,sans,sans-serif;border-collapse:collapse;border:1px solid rgb(130,130,130)" >'
+	list2d[0] = [u'<b>' + i + u'</b>' for i in list2d[0]]
+	for row in list2d:
+		newrow = u'<tr>'
+		newrow += u'<td align="left" style="padding:1px 4px">'+str(row[0])+u'</td>'
+		row.remove(row[0])
+		newrow = newrow + ''.join([u'<td align="right" style="padding:1px 4px">' + str(x) + u'</td>' for x in row])
+		newrow += '</tr>'
+		htable+= newrow
+	htable += '</table>'
+	return htable
+
 def classfilter(x):
     filt = 1
     if x == "person":
@@ -115,6 +146,12 @@ def gambar():
     # wCap.release()
     return data
 
+@app.route('/tabel')
+def tabel():
+    query = "SELECT * FROM data"
+    filetable = nlist_to_html(query_mysql(query))
+    return filetable
+
 
 
 
@@ -130,7 +167,7 @@ def hello(word):
         blob = cv2.dnn.blobFromImage(frame, 0.007843, (300,300), 127.5)
         net.setInput(blob)
         detections = net.forward()
-        
+
         for i in np.arange(0, detections.shape[2]):
             confidence = detections[0,0,i,2]
             if confidence > args["confidence"]:
@@ -140,7 +177,7 @@ def hello(word):
                 idk = idx
                 box = detections[0,0,i,3:7] * np.array([W, H, W, H])
                 (startX, startY, endX, endY) = box.astype("int")
-                
+
                 label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
                 tracker = dlib.correlation_tracker()
                 rect = dlib.rectangle(startX, startY, endX, endY)
@@ -158,7 +195,7 @@ def hello(word):
             endX = int(pos.right())
             endY = int(pos.bottom())
             rects.append((startX, startY, endX, endY))
-    
+
     objects = ct.update(rects)
     for (objectID, centroid) in objects.items():
         to = trackableObjects.get(objectID, None)
@@ -202,9 +239,8 @@ def hello(word):
 setInterval(1/FPS, hello, '')
 
 
-        
-        
+
+
 
 if __name__ == '__main__':
     socketio.run(app)
-    
