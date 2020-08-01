@@ -1,6 +1,6 @@
 # python3 webserver.py --prototxt mobilenet_ssd/MobileNetSSD_deploy.prototxt --model mobilenet_ssd/MobileNetSSD_deploy.caffemodel
 
-from flask import Flask, render_template
+from flask import Flask, request, url_for, redirect
 from flask_socketio import SocketIO,send,emit
 from flask import render_template
 import cv2
@@ -146,11 +146,13 @@ def gambar():
     # wCap.release()
     return data
 
-@app.route('/tabel')
+@app.route('/tabel', methods=['POST'])
 def tabel():
+    global mycursor
     query = "SELECT * FROM data"
-    filetable = nlist_to_html(query_mysql(query))
-    return filetable
+    mycursor.execute(query)
+    datasini = mycursor.fetchall()
+    return render_template('index2.html', value=datasini)
 
 
 

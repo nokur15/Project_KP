@@ -22,10 +22,12 @@ mycursor = mydb.cursor()
 mycursor.execute("SELECT * FROM data")
 
 myresult = mycursor.fetchall()
+print(myresult)
+print(myresult[0][0])
 
 for x in myresult:
   print(x)
-  
+
 id3 = (1,)
 id2 = (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 #id2 = id2 + (mycursor.lastrowid,)
