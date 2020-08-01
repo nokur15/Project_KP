@@ -55,7 +55,7 @@ def query_mysql(query):
 #take list of lists as argument
 def nlist_to_html(list2d):
 	#bold header
-	htable=u'<table width ="70%">'
+	htable=u'<head><title>Data CCTV</title></head><body><table width ="70%" border="1" bordercolor=000000 cellspacing="0" cellpadding="1" style="table-layout:fixed;vertical-align:bottom;font-size:13px;font-family:verdana,sans,sans-serif;border-collapse:collapse;border:1px solid rgb(130,130,130)">'
 	list2d[0] = [u'<b>' + i + u'</b>' for i in list2d[0]]
 	for row in list2d:
 		newrow = u'<tr>'
@@ -64,7 +64,7 @@ def nlist_to_html(list2d):
 		newrow = newrow + ''.join([u'<td align="right" style="padding:1px 4px">' + str(x) + u'</td>' for x in row])
 		newrow += '</tr>'
 		htable+= newrow
-	htable += '</table>'
+	htable += '</table></body>'
 	return htable
 
 def classfilter(x):
