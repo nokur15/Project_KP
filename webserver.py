@@ -55,7 +55,7 @@ def query_mysql(query):
 #take list of lists as argument
 def nlist_to_html(list2d):
 	#bold header
-	htable=u'<table width ="70%" border="1" bordercolor=000000 cellspacing="0" cellpadding="1" style="table-layout:fixed;vertical-align:bottom;font-size:13px;font-family:verdana,sans,sans-serif;border-collapse:collapse;border:1px solid rgb(130,130,130)" >'
+	htable=u'<table width ="70%">'
 	list2d[0] = [u'<b>' + i + u'</b>' for i in list2d[0]]
 	for row in list2d:
 		newrow = u'<tr>'
@@ -146,13 +146,14 @@ def gambar():
     # wCap.release()
     return data
 
-@app.route('/tabel', methods=['POST'])
+@app.route('/tabel')
 def tabel():
-    global mycursor
+    #global mycursor
     query = "SELECT * FROM data"
-    mycursor.execute(query)
-    datasini = mycursor.fetchall()
-    return render_template('index2.html', value=datasini)
+    hasil = nlist_to_html(query_mysql(query))
+    #mycursor.execute(query)
+    #datasini = mycursor.fetchall()
+    return hasil
 
 
 
