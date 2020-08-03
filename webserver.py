@@ -1,8 +1,7 @@
 # python3 webserver.py --prototxt mobilenet_ssd/MobileNetSSD_deploy.prototxt --model mobilenet_ssd/MobileNetSSD_deploy.caffemodel
 
-from flask import Flask, request, url_for, redirect
+from flask import Flask, render_template
 from flask_socketio import SocketIO,send,emit
-from flask import render_template
 import cv2
 import base64
 from threading import Thread
@@ -24,7 +23,7 @@ from datetime import datetime
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--prototxt", required=True, help="path to Caffe 'deploy' prototxt file")
 ap.add_argument("-m", "--model", required=True, help="path to Caffe pre-trained model")
-ap.add_argument("-c", "--confidence", type=float, default=0.51, help="minimum probability to filter weak detections")
+ap.add_argument("-c", "--confidence", type=float, default=0.7, help="minimum probability to filter weak detections")
 ap.add_argument("-s", "--skip-frames", type=int, default=2, help="# of skip frames between detections")
 args = vars(ap.parse_args())
 
@@ -52,8 +51,25 @@ def query_mysql(query):
 	cnx.close()
 	return rows
 
-
-
+def count_mysql(cla):
+    cnx = mysql.connector.connect(user='root', password='serenaochacohina',
+								  host='localhost',
+								  database='datacctv',charset="utf8", use_unicode = True)
+    cursor = cnx.cursor()
+    counts = []
+    for i in cla:
+        que = "SELECT * FROM data WHERE tipe = %s"
+        kelas = (i,)
+        cursor.execute(que, kelas)
+        comp = cursor.fetchall()
+        if comp != []:
+            hasil = cursor.rowcount
+            counts.append(hasil)
+        else:
+            counts.append(0)
+    cursor.close()
+    cnx.close()
+    return counts
 
 #take list of lists as argument
 def nlist_to_html(list2d, count):
@@ -115,7 +131,6 @@ net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 
 W = None
 H = None
-datacctv = []
 ids = (1,)
 idk = 0
 
@@ -128,7 +143,7 @@ totalDown = 0
 totalUp = 0
 
 # wCap = cv2.VideoCapture('http://192.168.1.3:4747/video')
-wCap = cv2.VideoCapture(1)
+wCap = cv2.VideoCapture(0)
 wCap.set(cv2.CAP_PROP_FRAME_WIDTH,600)
 wCap.set(cv2.CAP_PROP_FRAME_HEIGHT,600)
 app = Flask(__name__)
@@ -151,19 +166,9 @@ def gambar():
 
 @app.route('/tabel')
 def tabel():
-    global mycursor, CLASSES
+    global CLASSES
     query = "SELECT * FROM data"
-    counts = []
-    for i in CLASSES:
-        que = "SELECT * FROM data WHERE tipe = %s"
-        kelas = (i,)
-        mycursor.execute(que, kelas)
-        comp = mycursor.fetchall()
-        if comp != []:
-            hasil = mycursor.rowcount
-            counts.append(hasil)
-        else:
-            counts.append(0)
+    counts = count_mysql(CLASSES)
     hasil = nlist_to_html(query_mysql(query), counts)
     #mycursor.execute(query)
     #datasini = mycursor.fetchall()
@@ -173,7 +178,7 @@ def tabel():
 
 
 def hello(word):
-    global W, H, ct, totalFrames, trackers, trackableObjects, net, CLASSES, COLORS, mycursor, datacctv, ids, idk
+    global W, H, ct, totalFrames, trackers, trackableObjects, net, CLASSES, COLORS, mycursor, ids, idk
     retval, frame = wCap.read()
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     if W is None or H is None:
@@ -243,7 +248,6 @@ def hello(word):
             inp_id = mycursor.fetchall()
             for x in inp_id:
                 ids = ids + x
-        datacctv.append({'timestamp' : time, 'tipe' : tipe, 'file foto' : filefoto})
     totalFrames += 1
     retval, buffer = cv2.imencode('.jpg', frame)
     data = base64.b64encode(buffer)
