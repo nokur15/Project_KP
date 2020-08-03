@@ -1,6 +1,6 @@
 # python3 webserver.py --prototxt mobilenet_ssd/MobileNetSSD_deploy.prototxt --model mobilenet_ssd/MobileNetSSD_deploy.caffemodel
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from flask_socketio import SocketIO,send,emit
 import cv2
 import base64
@@ -143,7 +143,7 @@ totalDown = 0
 totalUp = 0
 
 # wCap = cv2.VideoCapture('http://192.168.1.3:4747/video')
-wCap = cv2.VideoCapture(0)
+wCap = cv2.VideoCapture(1)
 wCap.set(cv2.CAP_PROP_FRAME_WIDTH,600)
 wCap.set(cv2.CAP_PROP_FRAME_HEIGHT,600)
 app = Flask(__name__)
@@ -173,6 +173,21 @@ def tabel():
     #mycursor.execute(query)
     #datasini = mycursor.fetchall()
     return hasil
+
+@app.route('/foto', methods=["POST", "GET"])
+def foto():
+    if request.method == "POST":
+        file = request.form["img"]
+        return redirect(url_for("file", fle=file))
+    else:
+        return render_template("foto.html")
+
+@app.route('/<fle>')
+def file(fle):
+    namafile = "./Documents/GitHub/Project_KP/data/user."+str(fle)+".jpg"
+    fil = u'<img src="../data/user.0.jpg" alt= "foto user tertentu" width ="500" height ="600"></img>'
+    #fil = '<table border="1" bordercolor=000000 cellspacing="0" cellpadding="1" style="table-layout:fixed;vertical-align:bottom;font-size:13px;font-family:verdana,sans,sans-serif;border-collapse:collapse;border:1px solid rgb(130,130,130)" ><tr><td align="left" style="padding:1px 4px"><b>id</b></td><td align="right" style="padding:1px 4px"><b>timestamp</b></td><td align="right" style="padding:1px 4px"><b>tipe</b></td><td align="right" style="padding:1px 4px"><b>file_foto</b></td></tr><tr><td align="left" style="padding:1px 4px">1</td><td align="right" style="padding:1px 4px">2020-08-01 21:47:12.915013</td><td align="right" style="padding:1px 4px">person</td><td align="right" style="padding:1px 4px">data/user.0.jpg</td></tr><tr><td align="left" style="padding:1px 4px">2</td><td align="right" style="padding:1px 4px">2020-08-01 21:47:12.915013</td><td align="right" style="padding:1px 4px">person</td><td align="right" style="padding:1px 4px">data/user.1.jpg</td></tr></table>'
+    return fil
 
 
 

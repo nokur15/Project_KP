@@ -20,10 +20,10 @@ from datetime import datetime
 
 def copyf(dictlist, key, valuelist):
     return [dictio for dictio in dictlist if dictio[key] in valuelist]
-    
+
 def isempty(x):
     if not x: return True
-    
+
 def classfilter(x):
     filt = 1
     if x == "person":
@@ -78,13 +78,13 @@ net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 
 if not args.get("input", False):
     print("[INFO] starting video stream...")
-    vs = VideoStream(src=0).start()
+    vs = VideoStream(src=1).start()
     time.sleep(2.0)
 
 else:
     print("[INFO] opening video file...")
     vs = cv2.VideoCapture(args["input"])
-    
+
 writer = None
 datacctv = []
 ids = (1,)
@@ -109,22 +109,22 @@ while True:
         break
     frame = imutils.resize(frame, width = 400)
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
+
     if W is None or H is None:
         (H, W) = frame.shape[:2]
-        
+
     if args["output"] is not None and writer is None:
         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
         writer = cv2.VideoWriter(args["output"], fourcc, 30, (W,H), True)
-    
+
     rects = []
-    
+
     if totalFrames % args["skip_frames"] == 0:
         trackers = []
         blob = cv2.dnn.blobFromImage(frame, 0.007843, (300,300), 127.5)
         net.setInput(blob)
         detections = net.forward()
-        
+
         for i in np.arange(0, detections.shape[2]):
             confidence = detections[0,0,i,2]
             if confidence > args["confidence"]:
@@ -133,7 +133,7 @@ while True:
                     continue
                 box = detections[0,0,i,3:7] * np.array([W, H, W, H])
                 (startX, startY, endX, endY) = box.astype("int")
-                
+
                 label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
                 tracker = dlib.correlation_tracker()
                 rect = dlib.rectangle(startX, startY, endX, endY)
@@ -151,7 +151,7 @@ while True:
             endX = int(pos.right())
             endY = int(pos.bottom())
             rects.append((startX, startY, endX, endY))
-    
+
     objects = ct.update(rects)
     for (objectID, centroid) in objects.items():
         to = trackableObjects.get(objectID, None)
@@ -183,18 +183,18 @@ while True:
             for x in inp_id:
                 ids = ids + x
         datacctv.append({'timestamp' : time, 'tipe' : tipe, 'file foto' : filefoto})
-    
+
     if writer is not None:
         writer.write(frame)
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
-    
+
     if key == ord("q"):
         break
-    
+
     totalFrames += 1
     fps.update()
-    
+
 fps.stop()
 print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
 print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
@@ -218,7 +218,7 @@ with open(filename, 'w') as csvfile:
     writercsv = csv.DictWriter(csvfile, fieldnames = fields)
     writercsv.writeheader()
     writercsv.writerows(data_cctv_fin)
-    
+
 if writer is not None:
     writer.release()
 
@@ -226,6 +226,5 @@ if not args.get("input", False):
     vs.stop()
 else:
     vs.release()
-    
-cv2.destroyAllWindows()
 
+cv2.destroyAllWindows()
