@@ -89,6 +89,7 @@ if filefotobeda(filecomp,comp):
 else:
     print('this is wrong')
 
-query = "SELECT * FROM data"
-hasil = nlist_to_html(query_mysql(query))
+query = "SELECT * FROM data WHERE tipe='person'"
+mycursor.execute(query)
+hasil = mycursor.lastrowid + 1
 print(hasil)

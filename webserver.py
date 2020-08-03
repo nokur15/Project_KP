@@ -52,8 +52,11 @@ def query_mysql(query):
 	cnx.close()
 	return rows
 
+
+
+
 #take list of lists as argument
-def nlist_to_html(list2d):
+def nlist_to_html(list2d, count):
 	#bold header
 	htable=u'<head><title>Data CCTV</title></head><body><table width ="70%" border="1" bordercolor=000000 cellspacing="0" cellpadding="1" style="table-layout:fixed;vertical-align:bottom;font-size:13px;font-family:verdana,sans,sans-serif;border-collapse:collapse;border:1px solid rgb(130,130,130)">'
 	list2d[0] = [u'<b>' + i + u'</b>' for i in list2d[0]]
@@ -64,7 +67,7 @@ def nlist_to_html(list2d):
 		newrow = newrow + ''.join([u'<td align="right" style="padding:1px 4px">' + str(x) + u'</td>' for x in row])
 		newrow += '</tr>'
 		htable+= newrow
-	htable += '</table></body>'
+	htable += '</table><p>Person :'+ str(count[15])+'</p><br><p>Cat :'+ str(count[8])+'</p><br><p>Car :'+ str(count[7])+'</p><br><p>Motorbike :'+ str(count[14])+'</p><br><p>Dog :'+ str(count[12])+'</p><br></body>'
 	return htable
 
 def classfilter(x):
@@ -148,9 +151,20 @@ def gambar():
 
 @app.route('/tabel')
 def tabel():
-    #global mycursor
+    global mycursor, CLASSES
     query = "SELECT * FROM data"
-    hasil = nlist_to_html(query_mysql(query))
+    counts = []
+    for i in CLASSES:
+        que = "SELECT * FROM data WHERE tipe = %s"
+        kelas = (i,)
+        mycursor.execute(que, kelas)
+        comp = mycursor.fetchall()
+        if comp != []:
+            hasil = mycursor.rowcount
+            counts.append(hasil)
+        else:
+            counts.append(0)
+    hasil = nlist_to_html(query_mysql(query), counts)
     #mycursor.execute(query)
     #datasini = mycursor.fetchall()
     return hasil
